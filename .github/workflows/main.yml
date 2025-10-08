@@ -18,9 +18,11 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install requests pytrends beautifulsoup4
+        run: pip install google-generativeai requests pytrends beautifulsoup4
 
       - name: Run generator
+        env:
+          GEMINIAPIKEY: ${{ secrets.GEMINIAPIKEY }}
         run: python generate.py
 
       - name: Commit and push changes
