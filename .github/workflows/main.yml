@@ -1,0 +1,32 @@
+name: Auto Update Website
+
+on:
+  schedule:
+    - cron: "0 6 * * *"  # रोज़ सुबह 6 बजे (UTC time) update होगा
+  workflow_dispatch:     # manually भी चला सकते हो
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install requests pytrends beautifulsoup4
+
+      - name: Run generator
+        run: python generate.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Auto update website" || echo "No changes to commit"
+          git push
