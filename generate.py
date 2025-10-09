@@ -1,30 +1,50 @@
 import os
-import datetime
 import google.generativeai as genai
+from datetime import datetime
 
-# Gemini API key
-genai.configure(api_key=os.getenv("GEMINIAPIKEY"))
+# Gemini API key from GitHub Secrets
+api_key = os.getenv("GEMINIAPIKEY")
+genai.configure(api_key=api_key)
 
-# Get current time for dynamic prompt
-today = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+model = genai.GenerativeModel("gemini-2.5-flash-lite")
 
-# Create a dynamic prompt so each run gives a new article
-prompt = f"""
-Write a brand-new, SEO-optimized trending blog article in HTML format.
-Topic should be based on the most current global or tech trends as of {today}.
-Include a catchy title, engaging intro, subheadings, and a short meta description.
-At the end, add: "Published automatically by Gemini 2.5 Flash Lite AI".
-"""
+def generate_article(topic, region):
+    prompt = f"""
+    Write a detailed, human-like, SEO-optimized blog article in English about the trending topic '{topic}'.
+    The article should be written for {region} readers. Use storytelling tone, deep insights, and natural flow.
+    Include headers, short paragraphs, and an SEO meta description at the end.
+    """
+    response = model.generate_content(prompt)
+    return response.text
 
-# Generate content using Gemini
-model = genai.GenerativeModel("gemini-1.5-flash")
-response = model.generate_content(prompt)
+def save_article(content, region):
+    now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f"posts/{region.lower()}_article_{now}.html"
+    os.makedirs("posts", exist_ok=True)
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{region} | Auto AI Blog</title>
+</head>
+<body style="font-family: Arial; margin: 40px;">
+{content}
+<hr>
+<p style="font-size:14px;color:gray;">Published automatically by Gemini 2.5 Flash Lite AI</p>
+</body>
+</html>""")
+    print(f"✅ Saved: {filename}")
 
-# Save the response in /posts folder with unique name
-os.makedirs("posts", exist_ok=True)
-filename = f"posts/article_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.html"
+def main():
+    topics = ["latest AI trends", "emerging tech innovations"]
+    regions = ["India", "Global"]
+    for topic, region in zip(topics, regions):
+        print(f"📰 Generating {region} article...")
+        content = generate_article(topic, region)
+        save_article(content, region)
+    print("✨ All articles generated successfully!")
 
-with open(filename, "w", encoding="utf-8") as f:
-    f.write(response.text)
-
-print(f"✅ New article generated: {filename}")
+if __name__ == "__main__":
+    main()
