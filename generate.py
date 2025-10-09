@@ -48,3 +48,40 @@ def main():
 
 if __name__ == "__main__":
     main()
+# --- Append this at the end of generate.py ---
+
+import os
+
+posts_dir = "posts"
+index_file = "index.html"
+
+# Get all post files
+posts = sorted(os.listdir(posts_dir), reverse=True)
+
+# Generate list of links
+links_html = "\n".join([
+    f'<li><a href="posts/{p}">{p.replace("_", " ").replace(".html", "")}</a></li>'
+    for p in posts if p.endswith(".html")
+])
+
+# Create or update index.html
+index_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Auto Blog</title>
+  <meta name="description" content="Automatically updated AI-generated blog using Gemini 2.5 Flash Lite">
+</head>
+<body style="font-family: Arial; margin: 40px;">
+  <h1>📰 Latest AI-Generated Articles</h1>
+  <ul>{links_html}</ul>
+  <hr>
+  <p style="font-size: 14px; color: gray;">Updated automatically by Gemini AI — {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC</p>
+</body>
+</html>
+"""
+
+with open(index_file, "w", encoding="utf-8") as f:
+    f.write(index_content)
+
+print("✅ index.html updated with latest blog post links.")
